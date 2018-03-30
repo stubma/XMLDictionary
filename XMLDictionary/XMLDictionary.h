@@ -48,8 +48,8 @@ typedef NS_ENUM(NSInteger, XMLDictionaryAttributesMode)
 
 typedef NS_ENUM(NSInteger, XMLDictionaryNodeNameMode)
 {
-    XMLDictionaryNodeNameModeRootOnly = 0, //default
-    XMLDictionaryNodeNameModeAlways,
+	XMLDictionaryNodeNameModeAlways = 0, //default
+    XMLDictionaryNodeNameModeRootOnly,
     XMLDictionaryNodeNameModeNever
 };
 
@@ -74,6 +74,9 @@ static NSString *const XMLDictionaryAttributePrefix = @"_";
 
 @property (nonatomic, assign) XMLDictionaryAttributesMode attributesMode;
 @property (nonatomic, assign) XMLDictionaryNodeNameMode nodeNameMode;
+
+// if set, node will be sorted when serialization based on this attribute value
+@property (nonatomic, strong) NSString* nodeSortAttributeName;
 
 - (nullable NSDictionary<NSString *, id> *)dictionaryWithParser:(NSXMLParser *)parser;
 - (nullable NSDictionary<NSString *, id> *)dictionaryWithData:(NSData *)data;

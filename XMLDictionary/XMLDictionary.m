@@ -95,6 +95,10 @@
     return copy;
 }
 
+- (void)setNodeSortAttributeName:(NSString *)nodeSortAttributeName {
+	_nodeSortAttributeName = [NSString stringWithFormat:@"%@%@", XMLDictionaryAttributePrefix, nodeSortAttributeName];
+}
+
 - (NSDictionary<NSString *, id> *)dictionaryWithParser:(NSXMLParser *)parser
 {
     parser.delegate = self;
@@ -480,11 +484,35 @@
 	{
         [nodes addObject:[NSString stringWithFormat:@"<!--%@-->", [comment XMLEncodedString]]];
 	}
-    
-    NSDictionary *childNodes = [self childNodes];
-	for (NSString *key in childNodes)
-	{
-		[nodes addObject:[XMLDictionaryParser XMLStringForNode:childNodes[key] withNodeName:key]];
+	
+	NSString* sortAttributeName = [XMLDictionaryParser sharedInstance].nodeSortAttributeName;
+    NSDictionary *childDict = [self childNodes];
+	if(sortAttributeName) {
+		// get all child nodes in an array and sort them
+		NSMutableArray* childNodes = [NSMutableArray array];
+		[childDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+			if([obj isKindOfClass:[NSDictionary class]]) {
+				[childNodes addObject:obj];
+			} else if([obj isKindOfClass:[NSArray class]]) {
+				[childNodes addObjectsFromArray:obj];
+			}
+		}];
+		[childNodes sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+			NSDictionary* dict1 = (NSDictionary*)obj1;
+			NSDictionary* dict2 = (NSDictionary*)obj2;
+			NSInteger z1 = [dict1[sortAttributeName] integerValue];
+			NSInteger z2 = [dict2[sortAttributeName] integerValue];
+			return z1 - z2;
+		}];
+		for (NSDictionary* node in childNodes)
+		{
+			[nodes addObject:[XMLDictionaryParser XMLStringForNode:node withNodeName:[node nodeName]]];
+		}
+	} else {
+		for (NSString* key in childDict)
+		{
+			[nodes addObject:[XMLDictionaryParser XMLStringForNode:childDict[key] withNodeName:key]];
+		}
 	}
 	
     NSString *text = [self innerText];
